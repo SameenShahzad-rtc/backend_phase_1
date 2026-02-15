@@ -2,56 +2,53 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
 
+app = FastAPI()
 
-app=FastAPI()
-
-
-
+# In-memory storage
+tasks: List[dict] = []
 
 class Task(BaseModel):
-    id:int
-    task_name:str
-    status:str
+    id: int
+    task_name: str
+    status: str
 
-#welcome msg
-@app.get('/')
-
+# Welcome message
+@app.get("/")
 def wel_msg():
-    return {"Welcome to Mini PRoject"}
+    return {"message": "Welcome to Mini Project"}
 
-#return list of tasks
-@app.get("/tasks",response_model=List[Task])
-def li_task(t:Task):
-    return t
+# Return all tasks
+@app.get("/tasks", response_model=List[Task])
+def li_task():
+    return tasks
 
-#get single task
-@app.get("/tasks/{task_id}")
-def Single_t(task_id:int,task:Task):
-    for t in task:
-        if t["id"]==task_id:
+# Get single task
+@app.get("/tasks/{task_id}", response_model=Task)
+def single_task(task_id: int):
+    for t in tasks:
+        if t["id"] == task_id:
             return t
-    return {"message": "Task id is not found"}
-#delete
+    return {"message": "Task id not found"}
+
+# Delete a task
 @app.delete("/tasks/{task_id}")
-def delete_task(task_id: int,t:Task):
-    for index, task in enumerate(t):
-        if task["id"] == task_id:
-            t.pop(index)
+def delete_task(task_id: int):
+    for index, t in enumerate(tasks):
+        if t["id"] == task_id:
+            tasks.pop(index)
             return {"message": "Task deleted"}
-    return {"message": "Task id is not found"}
+    return {"message": "Task id not found"}
 
-#Add a task
+# Add a task
 
-
+@app.post("/tasks", response_model=Task)
 
 @app.post("/tasks", response_model=Task)
 def add_task(task: Task):
-
-    new_task = {
-        "id": task.id,
-        "task_name": task.task_name,
-        "status": task.status
-    }
-
-    task.append(new_task)
-    return new_task
+    # Check if task ID already exists
+    for t in tasks:
+        if t["id"] == task.id:
+            return {"msg":"not found id"}
+    # Append new task to the global list
+    tasks.append(task.dict())
+    return task
