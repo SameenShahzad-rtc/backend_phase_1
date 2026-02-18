@@ -9,19 +9,21 @@ from fastapi.security import OAuth2PasswordBearer
 from pwdlib import PasswordHash
 from dotenv import load_dotenv
 import os
+from config.config import SECRET_KEY,ACCESS_TOKEN_EXPIRE_MINUTES,ALGORITHM
 
 
-load_dotenv()
 #secret key
 #algo
 #expiration time
 
+#task 3: readme updates----done
+#task2:handlerfolder-----db queries----done
+#task2:config folder --.env----done
+
+#task 4: alembic migration learning
+#task1:uv----study----shift project to uv
+
 #step 1:define jwt 3 thing 
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
-
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 15))
 
 
 # =OAuth2PasswordBearer(tokenUrl='login')
@@ -48,7 +50,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     # access token
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -59,7 +61,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 def get_current_user(token:str=Depends(oauth_scheme), db: Session = Depends(get_db)):
 
     try:
-        payload=jwt.decode(token,SECRET_KEY,algorithms=ALGORITHM)
+        payload=jwt.decode(token,SECRET_KEY,algorithms=[ALGORITHM])
         user_id:int=payload.get("id")
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token")
@@ -67,7 +69,6 @@ def get_current_user(token:str=Depends(oauth_scheme), db: Session = Depends(get_
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
     user = db.query(User).filter(User.id == user_id).first()
-
     if user is None:
         raise  HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

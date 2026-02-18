@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
 import os
-
+from config.config import DATABASE_URL
 
 # from this file i get engine ,session ,getdb,base
 
@@ -15,9 +15,7 @@ import os
 # -session maker
 # base def 
 
-load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL")
 
 #connect py to db
 engine=create_engine(DATABASE_URL)

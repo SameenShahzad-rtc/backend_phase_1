@@ -8,6 +8,6 @@ from database import Base,engine
 Base.metadata.create_all(bind=engine)
 app=FastAPI()
 
-app.include_router(user_routes.r,prefix='/users',tags=['users'])
-app.include_router(project_routes.ro,prefix='/project',tags=['project'])
-app.include_router(task_routes.rou, prefix='', tags=['routers'])
+app.include_router(user_routes.user_routes,prefix='/users',tags=['users'])
+app.include_router(project_routes.project_routes,prefix='/project',tags=['project'])
+app.include_router(task_routes.task_routes, prefix='', tags=['routers'])
