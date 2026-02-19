@@ -1,78 +1,113 @@
 # Backend Phase 1
+# Alembic Migrations 🚀  
+*Database Schema Management with FastAPI*
 
-## Handler and config implementation
-
-This is a **FastAPI backend** project for managing **users**, **projects**, and **tasks**.  
-The project follows **clean architecture** by separating **routes**, **handlers**, and **config**, making it maintainable, scalable, and production-ready.
-
-Key Features:
-
-- User registration and JWT authentication
-- Project CRUD operations (Create, Read, Delete)
-- Task CRUD operations within projects
-- Centralized database handlers for clean SQLAlchemy queries
-- Environment-based configuration using `.env`
+This document provides step-by-step instructions for using **Alembic** to manage database migrations in a FastAPI project.  
+Alembic helps track changes to your database schema in a versioned, controlled way.
 
 ---
 
-## Project Structure
-project/
-│
-├── .env # Environment variables
-├── main.py # FastAPI entrypoint
-├── database.py # SQLAlchemy engine, session, Base
-├── config/
-│ └── config.py # Loads .env variables
-├── routers/ # API routes
-│ ├── user_routes.py
-│ ├── project_routes.py
-│ └── task_routes.py
-├── handlers/ # Database query logic
-│ ├── user_handler.py
-│ ├── project_handler.py
-│ └── task_handler.py
-├── models/ # SQLAlchemy models
-├── schemas/ # Pydantic schemas
-└── requirements.txt # Project dependencies
-Installation & Setup
+## 📋 Table of Contents
 
-Clone the repository
+- [Install Alembic](#install-alembic)  
+- [Initialize Alembic](#initialize-alembic)  
+- [Configure Alembic](#configure-alembic)  
+- [Create a Migration](#create-a-migration)  
+- [Apply Migration](#apply-migration)  
+- [Revert Migration](#revert-migration)  
+- [Tips & Best Practices](#tips--best-practices)  
 
-git clone <your-repo-url>
-cd backend_phase_1
+---
+
+### 🗓 Install Alembic
+
+## Install Alembic using pip:
 
 
-Install dependencies
+- pip install alembic
+## 🗓 Initialize Alembic
 
-pip install -r requirements.txt
+Initialize Alembic inside your project:
+
+alembic init migration
 
 
-Run the server
+This will create a migration folder containing:
 
-uvicorn main:app --reload
-API Endpoints
-Users
+alembic.ini – configuration file
 
-POST /users/register – Register a new user
+versions/ – folder for migration scripts
 
-POST /users/login – Login and receive JWT token
+Note:
+Each migration script in versions/ has a unique revision ID.
 
-Projects
+upgrade() → applies the changes
 
-POST /projects/ – Create a new project
+downgrade() → reverts the changes
 
-GET /projects/ – Get all projects for the current user
+## 🗓 Configure Alembic
+Update alembic.ini
 
-GET /projects/{id} – Get a single project
+Set your database URL:
 
-DELETE /projects/{id} – Delete a project
+sqlalchemy.url = postgresql://username:password@localhost:5432/db_name
 
-Tasks
+## Update alembic/env.py
 
-POST /tasks/projects/{project_id} – Create a task for a project
+Include your models and metadata:
 
-GET /tasks/projects/{project_id} – Get all tasks of a project
+from database import Base
+from config.config import DATABASE_URL
+from models.user import User
+from models.project import Project
+from models.task import Task
 
-PUT /tasks/{task_id} – Update a task
+from sqlalchemy import engine_from_config, pool
+from alembic import context
 
-DELETE /tasks/{task_id} – Delete a task
+# Alembic Config object
+config = context.config
+
+# Set database URL
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
+
+# Target metadata for autogenerate
+target_metadata = Base.metadata
+
+## 🗓 Create a Migration
+
+Generate a new migration to add an age column:
+
+alembic revision --autogenerate -m "add age column to user table"
+
+
+Alembic will create a file in migration/versions/. Example content:
+
+def upgrade() -> None:
+    """Upgrade schema."""
+    op.add_column('users', sa.Column('age', sa.Integer(), nullable=False, server_default='20'))
+   
+def downgrade() -> None:
+    """Downgrade schema."""
+    op.drop_column('users', 'age')
+
+## 🗓 Apply Migration
+
+Apply changes to the database:
+
+alembic upgrade head
+
+
+Check your database in pgAdmin 4:
+
+The users table should now include the age column.
+
+## 🗓 Revert Migration
+
+To undo the last migration:
+
+alembic downgrade -1
+
+
+The age column will be removed from the users table.
+
