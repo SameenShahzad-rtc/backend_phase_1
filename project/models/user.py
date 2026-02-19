@@ -12,5 +12,6 @@ class User(Base):
     username = Column(String, nullable=False)
     email= Column(String, nullable=False)
     password = Column(String, nullable=False)
+    age = Column(Integer, nullable=False,default=20) 
 
     projects = relationship("Project", back_populates="owner")
